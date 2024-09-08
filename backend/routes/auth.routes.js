@@ -3,10 +3,10 @@ import { Login, Logout, SignUp } from "../controllers/auth.controller.js";
 
 const router = express.Router();
 
-router.get("/login", Login);
+router.post("/login", Login);
 
-router.get("/signup", SignUp);
+router.post("/signup", SignUp);
 
-router.get("/logout", Logout);
+router.post("/logout", Logout);
 
 export default router;
