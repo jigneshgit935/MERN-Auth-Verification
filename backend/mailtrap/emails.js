@@ -1,5 +1,6 @@
 import {
   PASSWORD_RESET_REQUEST_TEMPLATE,
+  PASSWORD_RESET_SUCCESS_TEMPLATE,
   VERIFICATION_EMAIL_TEMPLATE,
 } from "./emailTemplates.js";
 import { mailtrapClient, sender } from "./mailtrap.config.js";
@@ -65,5 +66,24 @@ export const sendPasswordResetEmail = async (email, resetUrl) => {
     console.log(`Error Sending Password Reset Email :`, error);
 
     throw new Error(`Error Sending Password Reset Email : ${error}`);
+  }
+};
+
+export const resetSuccessEmail = async (email) => {
+  const recipient = [{ email }];
+
+  try {
+    const response = await mailtrapClient.send({
+      from: sender,
+      to: recipient,
+      subject: "Update your password",
+      html: PASSWORD_RESET_SUCCESS_TEMPLATE,
+      category: "Password Updated",
+    });
+    console.log("Password updated successfully", response);
+  } catch (error) {
+    console.log(`Error in password updating :`, error);
+
+    throw new Error(`Error in password updating : ${error}`);
   }
 };

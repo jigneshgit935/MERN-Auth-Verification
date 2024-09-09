@@ -4,6 +4,7 @@ import crypto from "crypto";
 
 import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
 import {
+  resetSuccessEmail,
   sendPasswordResetEmail,
   sendVerificationEmail,
   sendWelcomeEmail,
@@ -169,6 +170,43 @@ export const forgotPassword = async (req, res) => {
     });
   } catch (error) {
     console.log("error in sending reset password link", error);
+
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpiredAt: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid or expired reset token" });
+    }
+
+    // update password
+    const hashedPassword = await bcryptjs.hash(password, 10);
+    user.password = hashedPassword;
+
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpiredAt = undefined;
+    await user.save();
+
+    await resetSuccessEmail(user.email);
+
+    return res.status(200).json({
+      success: true,
+      message: "Password Updated Successfully",
+    });
+  } catch (error) {
+    console.log("error in updating password", error);
 
     res.status(500).json({ success: false, message: error.message });
   }
